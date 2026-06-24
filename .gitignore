@@ -1,0 +1,33 @@
+# Maven build artifacts
+**/target/
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.restore
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Eclipse configuration
+**/.settings/
+**/.project
+**/.classpath
+**/.factorypath
+
+# IntelliJ IDEA configuration
+**/.idea/
+**/*.iws
+**/*.iml
+**/*.ipr
+
+# Log files
+**/logs/
+**/*.log
+
+# Operating system files
+**/Thumbs.db
+**/ehthumbs.db
+**/Desktop.ini
+**/.DS_Store
