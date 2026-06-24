@@ -40,13 +40,46 @@ graph TD
 
 ---
 
-## 🛠️ Technologies Utilisées
-* **Java 17 / Java 21**
-* **Spring Boot 2.6.1**
-* **Spring Cloud OpenFeign**
-* **Thymeleaf & Bootstrap** (pour l'interface client)
-* **Base de données H2** (en mémoire)
-* **Maven Wrapper** (inclus dans chaque projet)
+## 🛠️ Technologies & Écosystème Spring Boot en Détail
+
+Ce projet exploite la puissance de l'écosystème **Spring Boot** et **Spring Cloud** pour simplifier le développement et la persistance des données. Voici comment les différents composants s'articulent et s'intègrent :
+
+```mermaid
+graph TD
+    subgraph Microservice [Structure Interne d'un Microservice]
+        Controller[Spring Web RestController] -->|Utilise| Repository[Spring Data JPA Repository]
+        Repository -->|Gère| Entity[Java JPA Entities]
+        Repository -->|Discute avec| Database[(Base de Données H2 / SQL)]
+    end
+    
+    subgraph Communication [Échanges entre Services]
+        ClientUI[clientui] -->|Appel déclaratif @FeignClient| OpenFeign[Spring Cloud OpenFeign]
+        OpenFeign -->|Requête HTTP REST| Controller
+    end
+    
+    subgraph Evenementiel [Évolution Asynchrone / Optionnelle]
+        Controller -->|Événement de Validation| KafkaProducer[Apache Kafka Producer]
+        KafkaProducer -->|Publie Message| KafkaBroker[Kafka Broker - Port 9092]
+        KafkaBroker -->|Consomme Flux / Stream| KafkaStreams[Kafka Streams / Consumer]
+    end
+```
+
+### 1. ⚙️ Les Composants du Framework Spring Boot
+Chaque microservice du projet est construit sur un socle Spring Boot standard, où les composants collaborent de la manière suivante :
+* **Spring Web (MVC / REST)** : Gère l'exposition des routes HTTP (via `@RestController` et les annotations de mapping comme `@GetMapping`, `@PostMapping`). C'est le point d'entrée pour les appels externes et inter-services.
+* **Spring Data JPA & Hibernate** : Abstrait la couche d'accès aux données. Hibernate sert d'implémentation de l'ORM (Object-Relational Mapping), tandis que Spring Data JPA fournit des repositories prêts à l'emploi (interfaces étendant `JpaRepository`) pour exécuter des requêtes SQL sans avoir à écrire de code boilerplate.
+* **Base de données H2 (In-Memory)** : Une base de données relationnelle en mémoire très légère. Elle est créée au démarrage du microservice et détruite à l'arrêt. Elle est idéale pour le prototypage rapide. Dans `microservice-produits`, les données de démonstration sont insérées au démarrage via le script `data.sql`.
+
+### 2. 🔗 La Communication Synchrone : Spring Cloud OpenFeign
+Au lieu d'utiliser un client HTTP classique (comme `RestTemplate` ou `WebClient`) qui requiert d'écrire manuellement des URLs de requêtes et de parser les réponses, **OpenFeign** rend la communication déclarative :
+* On définit une interface annotée `@FeignClient` avec l'URL du service cible (ex: `@FeignClient(name = "microservice-produits", url = "localhost:9001")`).
+* On déclare les méthodes correspondantes avec les annotations Spring Web standards (comme `@GetMapping("/Produits")`).
+* Au démarrage, Spring génère l'implémentation proxy sous le capot et gère automatiquement l'envoi de la requête HTTP synchrone, la sérialisation/désérialisation JSON en objets Java (Beans), et la gestion des exceptions.
+
+### 3. 🔄 La Communication Asynchrone : Apache Kafka & Kafka Streams (Concept Événementiel)
+Dans les architectures d'entreprise, la communication synchrone (HTTP/Feign) peut engendrer des couplages forts et des risques de pannes en cascade. C'est ici que s'intègre **Apache Kafka** (comme démontré dans le projet frère `kafka-streams` de votre espace de travail) :
+* **Découplage événementiel** : Lorsqu'un paiement est validé par le `microservice-paiement`, au lieu d'appeler directement le `microservice-commandes` de manière synchrone, il peut publier un événement `PaiementValide` dans un **Broker Kafka (port 9092)**.
+* **Consommation & Streaming** : Le `microservice-commandes` ou un outil d'analyse en temps réel (utilisant **Kafka Streams** ou un simple Consumer) écoute le flux de messages pour mettre à jour la commande ou générer des analytiques en temps réel, de façon totalement asynchrone et résiliente.
 
 ---
 
