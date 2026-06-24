@@ -4,6 +4,11 @@ Ce projet implémente une plateforme d'e-commerce simplifiée (Mcommerce) basée
 
 ---
 
+## 📝 Énoncé du Devoir
+Le sujet complet du devoir est disponible dans le dépôt sous le fichier [Devoir_Module_JEE(2)_MicroServices_v1.pdf](Devoir_Module_JEE(2)_MicroServices_v1.pdf).
+
+---
+
 ## 🏗️ Architecture du Système
 
 Le projet est divisé en **4 modules** (microservices) autonomes qui collaborent ensemble :
